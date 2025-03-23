@@ -1,26 +1,33 @@
-name: Deploy to EC2
+name: Node.js CI/CD dev
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.x]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ec2-user/jobsforce-backend
-            git pull origin main
-            npm install
-            pm2 restart jobsforce
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - run: npm i
+    - run: npm run build --if-present
+
+    - name: Setup .env file
+      run: |
+        echo "${{ secrets.PROD_ENV_FILE }}" | tr -d '\r' > .env
+
+    - name: Restart Application
+      run: |
+        pm2 restart jobsforce || pm2 start npm --name "jobsforce" -- run start
