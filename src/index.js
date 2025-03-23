@@ -26,5 +26,6 @@ app.use(errorResponse)
 
 app.listen(PORT,() => {
     connectDB()
+    // change to check ec2 workflow
     console.log(`Server running on ${PORT}`)
 })
