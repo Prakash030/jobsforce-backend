@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the Server!!!");
+    res.send("Welcome to the jobsforce Server!!!");
 });
 
 const PORT = process.env.PORT || 4000
